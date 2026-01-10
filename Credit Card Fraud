@@ -1,0 +1,99 @@
+
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+df = pd.read.csv(Z)
+df.isnull().sum()
+df.fillna(df.mean.(), inplace = True) #give null values the average value
+
+
+X = df.drop(['Id', 'Class'], axis = 1, errors = 'ignore')
+y = df['Class']
+
+print(df.columns.tolist())
+
+
+X_train, X_test, y_train, y_test = train_test_split((X, y, test_size = 0.2, random_state =  42)
+                                                    
+X.Train.shape
+X_test.shape
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+print(pd.Series(y_train).value_counts(normalize = True))
+
+rd_model = RandomForestClassifier(
+    n_estimators=100,
+    max_depth=10,min_samples_split=5,
+    random_state=42
+    )
+
+cv_scores = cross_val_score(rf_model, X_train_scaled, y_train, cv = 5, scoring='f1')
+print("\nCross-validation FI scores", cv_scores)
+print("Average F1 Score:", np.mean(cv_scores))
+
+rf_model.fit(X_train_scaled, y_train)
+
+y_pred = rf_model.predict(X_test_scaled)
+print(classification_report(y_test, y_pred))
+
+
+
+plt.figure(figsize=(8, 6))
+cm = confusion_matrix(y_test, y_pred)
+sns.heatmap(cm, annot = True, fmt = 'd', cmap = 'Blues')
+plt.title('Confusion Matrix')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+
+
+importance = rf_model.feature_importances_
+feature_imp = pd.DataFrame({
+    'Feature': X.columns,
+    'Importance': importance
+    }).sort_values('Importance', ascending = False)
+
+
+feature_imp.head() 
+
+plt.figure(figsize=(10, 6))
+sns.barplot(data=feature_imp, c = "Importance", y = 'Feature')
+plt.title("Feature Importance Ranking")
+plt.xlabel('Importance Score')
+plt.tight_layout()
+plt.show()
+
+
+plt.figure(figsize=(12,8))
+correlation_matrix = X.corr()
+sns.heatmap(correlation_matrix, cmap = 'coolwarm', center = 0, annot = True, fmt = '.2f')
+plt.title('Feature Correlation Matrix')
+plt.tight_layout()
+plt.show()
+
+
+y_pred_proba = rf_model.predict_proba(X_test_scaled)[:, 1]
+fpr, tpr, _ roc_curve(y_test, y_pred_proba)
+roc_auc = auc(fpr, tpr)
+
+plt.figure(figsize=(8,6))
+plt.plot(fpr, tpr, color = 'drakorange', lw = 2, label=f'ROC curve (AUC = {roc_auc:.2f})')
+plt.plot([0, 1], [0 , 1], color = 'navy', lw = 2, linestyle = '--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Recieving Operating Characteritic (ROC) Curve')
+plt.legend(loc='lower right')
+plt.show()
+
+
+
